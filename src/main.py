@@ -1,4 +1,4 @@
-from Bot.create_event import criar_evento_interativo
+from Bot.create_event import criar_evento_interativo, Interpretar_mensagem
 from Bot.list_events import listar_eventos
 import spacy
 from sklearn.feature_extraction.text import CountVectorizer
@@ -24,7 +24,7 @@ def interpretar_entrada(texto, vectorizer, nb_classifier):
     return previsao[0]
 
 def main():
-    print("Olá! Eu sou o seu assistente virtual. Em que posso ajudar hoje?")
+    print("Olá! Eu sou o seu Zoe. Em que posso ajudar hoje?")
 
     # ID do calendário onde os eventos serão listados ou adicionados
     calendar_id = '042bd9f9c7757f611d765a6b8fb84c7911246aa7d2ee6ce260dbc19953048450@group.calendar.google.com'
@@ -44,8 +44,8 @@ def main():
             eventos = listar_eventos(calendar_id)
             print(eventos)
         elif intencao == "criar_evento":
-            resultado = criar_evento_interativo(calendar_id)
-            print(resultado)
+            nome_evento, dia, mes, ano, meet, convidados = Interpretar_mensagem(entrada)
+            criar_evento_interativo(calendar_id, nome_evento, dia, mes, ano)
         elif entrada.lower() == 'sair':
             print("Até logo!")
             break
