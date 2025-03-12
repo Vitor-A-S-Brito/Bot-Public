@@ -1,0 +1,40 @@
+# Ambiente virtual
+venv_bot/
+venv/
+env/
+ENV/
+
+# Arquivos de credenciais e tokens
+data/user_data/
+*.json
+!requirements.json
+
+# Arquivos de cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs e arquivos temporários
+*.log
+logs/
+temp/
+tmp/
+
+# Arquivos específicos do sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de IDE e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/

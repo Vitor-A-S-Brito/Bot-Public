@@ -1,0 +1,20 @@
+# Telegram Bot
+python-telegram-bot>=20.0
+
+# Google Calendar API
+google-api-python-client>=2.80.0
+google-auth>=2.16.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+
+# NLP e processamento de dados
+transformers>=4.28.0
+torch>=2.0.0
+sentencepiece>=0.1.97
+regex>=2022.10.31
+python-dateutil>=2.8.2
+
+# Utilidades
+pytz>=2023.3
+requests>=2.28.2
+python-dotenv>=1.0.0
