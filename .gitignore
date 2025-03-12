@@ -1,8 +1,9 @@
 # Ambiente virtual
 venv_bot/
 venv/
-env/
-ENV/
+.env/
+.ENV/
+.env
 
 # Arquivos de credenciais e tokens
 data/user_data/
