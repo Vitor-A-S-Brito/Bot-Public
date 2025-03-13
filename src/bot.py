@@ -536,7 +536,7 @@ class CalendarBot:
         """Cria um evento a partir das informações pendentes"""
         user_id = str(update.effective_user.id)
         pending_event = context.user_data.get('pending_event', {})
-        
+
         # Verificar se tem todas as informações necessárias
         if 'date' in pending_event and 'time' in pending_event:
             # Extrair informações
@@ -547,7 +547,9 @@ class CalendarBot:
             location = pending_event.get('location')
             add_meet_link = pending_event.get('add_meet_link', False)
             attendees = pending_event.get('attendees')
-            
+            recurrence = pending_event.get('recurrence')  # Novo
+            end_date = pending_event.get('end_date')      # Novo
+
             # Criar o evento
             success, result = self.calendar_manager.create_event(
                 user_id=user_id,
@@ -557,7 +559,9 @@ class CalendarBot:
                 duration=duration,
                 location=location,
                 attendees=attendees,
-                add_meet_link=add_meet_link
+                add_meet_link=add_meet_link,
+                recurrence=recurrence,  # Novo
+                end_date=end_date       # Novo
             )
             
             if success:
@@ -726,7 +730,9 @@ class CalendarBot:
             location = entities.get('location')
             add_meet_link = entities.get('is_meeting', False)
             attendees = entities.get('attendees')
-            
+            recurrence = entities.get('recurrence')  # Novo
+            end_date = entities.get('end_date')      # Novo
+
             success, result = self.calendar_manager.create_event(
                 user_id=user_id,
                 summary=summary,
@@ -735,8 +741,10 @@ class CalendarBot:
                 duration=duration,
                 location=location,
                 attendees=attendees,
-                add_meet_link=add_meet_link
-            )
+                add_meet_link=add_meet_link,
+                recurrence=recurrence,  # Novo
+                end_date=end_date       # Novo
+        )
             
             if success:
                 # Formatar data e hora para exibição

@@ -27,10 +27,10 @@ class CalendarManager:
         self.auth_manager = auth_manager
     
     def create_event(self, user_id, summary, start_date, start_time, 
-                     duration=1, description="", location="", attendees=None, 
-                     add_meet_link=False):
+                    duration=1, description="", location="", attendees=None, 
+                    add_meet_link=False, recurrence=None, end_date=None):
         """
-        Cria um novo evento no Google Calendar
+        Cria um novo evento no Google Calendar, com opção de recorrência
         
         Args:
             user_id (str): ID único do usuário
@@ -42,6 +42,8 @@ class CalendarManager:
             location (str): Local do evento
             attendees (list): Lista de e-mails dos participantes
             add_meet_link (bool): Se True, adiciona um link do Google Meet
+            recurrence (str): Tipo de recorrência ('daily', 'weekly', 'monthly', etc.)
+            end_date (str): Data final para eventos recorrentes (formato ISO: YYYY-MM-DD)
             
         Returns:
             tuple: (sucesso (bool), resultado (dict ou str))
@@ -51,6 +53,13 @@ class CalendarManager:
             return False, "Não foi possível conectar ao Google Calendar."
         
         try:
+            # Garantir que duration seja um número
+            if duration is None:
+                duration = 1.0  # valor padrão
+            else:
+                # Converter para float para garantir compatibilidade
+                duration = float(duration)
+            
             # Processar data e hora
             date_str = f"{start_date}T{start_time}:00"
             start_datetime = datetime.fromisoformat(date_str)
@@ -69,6 +78,19 @@ class CalendarManager:
                     'timeZone': 'America/Sao_Paulo',
                 },
             }
+            
+            # Adicionar regra de recorrência se especificada
+            if recurrence:
+                recurrence_rule = ['RRULE:FREQ=' + recurrence.upper()]
+                
+                # Adicionar data final para a recorrência se especificada
+                if end_date:
+                    # Formatar a data final no formato apropriado (YYYYMMDD)
+                    end_date_obj = datetime.fromisoformat(end_date)
+                    formatted_end_date = end_date_obj.strftime('%Y%m%d')
+                    recurrence_rule[0] += f';UNTIL={formatted_end_date}T235959Z'
+                
+                event['recurrence'] = recurrence_rule
             
             # Adicionar participantes se fornecidos
             if attendees:
@@ -99,10 +121,6 @@ class CalendarManager:
             
             # Retornar sucesso e o evento criado
             return True, created_event
-        except HttpError as e:
-            error_message = f"Erro na API do Google Calendar: {e}"
-            logger.error(error_message)
-            return False, error_message
         except Exception as e:
             error_message = f"Erro ao criar evento: {str(e)}"
             logger.error(error_message)

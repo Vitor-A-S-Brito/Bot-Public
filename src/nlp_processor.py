@@ -30,15 +30,15 @@ class NLPProcessor:
     def identify_intent(self, text):
         """
         Identifica a intenção da mensagem com reconhecimento contextual avançado
-        
+
         Args:
             text (str): Texto da mensagem
-            
+
         Returns:
             str: Intenção identificada
         """
         text_lower = text.lower()
-        
+
         # CONSULTANDO AGENDA - Expressões conversacionais
         agenda_queries = [
             # Perguntas diretas
@@ -46,25 +46,25 @@ class NLPProcessor:
             "preciso saber", "gostaria de saber", "poderia me dizer",
             "tenho", "tem", "existe", "há", "estão", "estarão",
             "qual é", "qual a", "qual minha", "quero ver", "quero saber",
-            
+
             # Frases com informações temporais
             "para hoje", "pra hoje", "hoje eu tenho", "tenho hoje",
             "para amanhã", "pra amanhã", "amanhã eu tenho", "tenho amanhã",
             "para essa semana", "essa semana", "na semana", "da semana",
             "tenho marcado", "está marcado", "foi marcado",
-            
+
             # Expressões de preocupação
             "não quero esquecer", "não posso esquecer", "lembrar", "me lembre",
             "o que temos", "preciso me preparar", "preciso saber"
         ]
-        
+
         agenda_objects = [
             "agenda", "calendário", "calendar", "dia", "cronograma",
             "reuniões", "reunioes", "reunião", "reuniao", 
             "compromissos", "compromisso", "eventos", "evento", 
             "marcado", "marcações", "marcacoes", "calls", "meetings"
         ]
-        
+
         # CRIAR EVENTOS - Expressões conversacionais
         create_actions = [
             # Verbos de ação direta
@@ -73,30 +73,30 @@ class NLPProcessor:
             "quero marcar", "quero agendar", "preciso marcar", "preciso agendar",
             "gostaria de marcar", "gostaria de agendar", "poderia marcar",
             "por favor agende", "por favor marque", "coloque", "colocar",
-            
+
             # Indicadores temporais com contexto de criação
             "para amanhã vamos ter", "amanhã teremos", "amanhã será",
             "para semana que vem", "na próxima semana", "semana que vem",
             "vou ter", "teremos", "vamos ter", "acontecerá"
         ]
-        
+
         # ATUALIZAR EVENTOS - Expressões conversacionais
         update_actions = [
             # Verbos de modificação
             "alterar", "mudar", "editar", "atualizar", "modificar", "trocar",
             "mover", "transferir", "reagendar", "remarcar", "ajustar",
             "quero mudar", "preciso alterar", "gostaria de mudar", "poderia alterar",
-            
+
             # Específicos para duração
             "aumentar duração", "diminuir duração", "estender", "prolongar", "encurtar"
         ]
-        
+
         duration_context = [
             "duração", "durar", "dura", "horas", "hora", "minutos", "tempo", 
             "mais longo", "mais curto", "estender", "prolongar", "reduzir",
             "aumentar o tempo", "diminuir o tempo", "por mais tempo"
         ]
-        
+
         # EXCLUIR EVENTOS - Expressões conversacionais
         delete_actions = [
             "cancelar", "remover", "deletar", "apagar", "excluir", "desmarcar",
@@ -104,13 +104,13 @@ class NLPProcessor:
             "não quero mais", "não vou participar", "não poderei", "não posso", "impossibilitado",
             "não acontecerá", "não vai acontecer", "não ocorrerá", "removido"
         ]
-        
+
         # Análise de intenção por contexto mais amplo
-        
+
         # Verificar Lista de Eventos
         if any(query in text_lower for query in agenda_queries) and any(obj in text_lower for obj in agenda_objects):
             return "LIST_EVENTS"
-        
+
         # Verificar expressões comuns de consulta de agenda sem objeto explícito
         list_expressions = [
             "o que tenho hoje", "o que eu tenho hoje", "o que tem hoje", 
@@ -120,39 +120,39 @@ class NLPProcessor:
             "o que tenho essa semana", "o que está marcado", "quais são os próximos",
             "próximos eventos", "próximas reuniões", "próximos compromissos"
         ]
-        
+
         for expr in list_expressions:
             if expr in text_lower:
                 return "LIST_EVENTS"
-        
+
         # Verificar Criação de Eventos
         if any(action in text_lower for action in create_actions):
             return "CREATE_EVENT"
-        
+
         # Verificar Atualização de Eventos
         if any(action in text_lower for action in update_actions):
             if any(context in text_lower for context in duration_context):
                 return "UPDATE_DURATION"
             return "UPDATE_EVENT"
-        
+
         # Verificar Exclusão de Eventos
         if any(action in text_lower for action in delete_actions):
             return "DELETE_EVENT"
-        
+
         # Análise de contexto adicional para casos não cobertos
-        
+
         # Expressões implícitas de consulta
         if "hoje" in text_lower and not any(w in text_lower for w in create_actions + update_actions + delete_actions):
             return "LIST_EVENTS"
-        
+
         if "amanhã" in text_lower and not any(w in text_lower for w in create_actions + update_actions + delete_actions):
             return "LIST_EVENTS"
-        
+
         # Expressões interrogativas sobre agenda
         question_words = ["quando", "que horas", "a que horas", "qual horário", "onde", "com quem"]
         if any(qw in text_lower for qw in question_words):
             return "LIST_EVENTS"
-        
+
         # Não foi possível identificar a intenção
         return "UNKNOWN"
     
@@ -590,3 +590,76 @@ class NLPProcessor:
                 return f"{int(hour)}h{minute}"
         except:
             return time_str
+        
+    def extract_recurrence(self, text):
+        """
+        Extrai informações de recorrência da mensagem
+
+        Args:
+            text (str): Texto da mensagem
+
+        Returns:
+            tuple: (tipo_recorrencia, data_final) ou (None, None)
+        """
+        text_lower = text.lower()
+
+        # Padrões para recorrência
+        if any(word in text_lower for word in ["todo dia", "diariamente", "todos os dias", "cada dia"]):
+            recurrence = "daily"
+        elif any(word in text_lower for word in ["semanal", "toda semana", "semanalmente", "cada semana", "toda segunda", "toda terça"]):
+            recurrence = "weekly"
+        elif any(word in text_lower for word in ["mensal", "todo mês", "mensalmente", "cada mês"]):
+            recurrence = "monthly"
+        elif any(word in text_lower for word in ["anual", "todo ano", "anualmente", "cada ano"]):
+            recurrence = "yearly"
+        else:
+            recurrence = None
+
+        # Tentar extrair data final para a recorrência
+        end_date = None
+
+        # Procurar padrões como "até 31/12/2025" ou "até 31 de dezembro"
+        end_date_matches = re.findall(r'até (\d{1,2})[/\-\.](\d{1,2})(?:[/\-\.](\d{2,4}))?', text_lower)
+        if end_date_matches:
+            match = end_date_matches[0]
+            day = int(match[0])
+            month = int(match[1])
+            year = int(match[2]) if len(match) > 2 and match[2] else datetime.now().year
+            if year < 100:
+                year += 2000
+
+            try:
+                end_date = datetime(year, month, day).date().isoformat()
+            except ValueError:
+                pass
+            
+        return recurrence, end_date
+    
+    def extract_entities(self, text):
+        """
+        Extrai todas as entidades relevantes da mensagem
+        
+        Args:
+            text (str): Texto da mensagem
+            
+        Returns:
+            dict: Dicionário com todas as entidades extraídas
+        """
+        entities = {
+            'date': self.extract_date(text),
+            'time': self.extract_time(text),
+            'duration': self.extract_duration(text),
+            'summary': self.extract_summary(text),
+            'location': self.extract_location(text),
+            'is_meeting': self.is_meeting_request(text),
+            'attendees': self.extract_attendees(text)
+        }
+        
+        # Extrair informações de recorrência
+        recurrence, end_date = self.extract_recurrence(text)
+        if recurrence:
+            entities['recurrence'] = recurrence
+            if end_date:
+                entities['end_date'] = end_date
+        
+        return entities
